@@ -1,7 +1,7 @@
 
 library("rvest")
 #Function to extract Data ---- # Only modify the "First_Junk"
-tsi_index <-
+tasi_index <-
   function (from_year,from_month,from_day,to_year,to_month,to_day,page_number) {
     first_junk <-
       "http://www.tadawul.com.sa/wps/portal/!ut/p/c1/lYtBC8IgHEc_0v-HOqOzxbKGyDSZXsJDxahtEVFfP7t1qYh3fO9RosKY7_0x3_ppzGfqKMmdgQqtFgy1sXPojVxqvWgBL4uPbx6uArRogldNzQH8ddc2VK_bMWfXHJr9uF2-kllNw54ipdnHkgvyFFWJ4tfoMmy7hzmcnnx6O5I!/dl2/d1/L0lHSkovd0RNQUprQUVnQSEhL1lCWncvZW4!/?current_page=%2Ftasi%2Fjsp%2Fhtml%2Findeces_performance.&chart_tasi_current_sector=TASI&TASIactionString=chart_tasi.form.config_change&performance_tasi_fromdate="
@@ -10,11 +10,11 @@ tsi_index <-
         first_junk, from_year, "%2F",from_month,"%2F",from_day,"&performance_tasi_fromdate=",to_year,"%2F",to_month,"%2F",to_day,"&performance_tasi_fromdate_Month=11&performance_tasi_todate=",to_year,"%2F",to_month,"%2F",to_day,"&performance_tasi_todate=",to_year,"%2F",to_month,"%2F",to_day,"&performance_tasi_todate_Month=11&page_index_number=",page_number,sep = ""
       )
     
-    htmlPage <- read_html(url_text)
-    table <- html_nodes(htmlPage,".Table3 td")
+    html_page <- read_html(url_text)
+    table <- html_nodes(html_page,".Table3 td")
     x <- html_text(table)
 
-    #Organizing the datain data.frame format
+    #Organizing the data in data.frame format
     tablized <- data.frame()
     n <- 9
     for (r in 2:(length(x) / 8)) {
@@ -38,8 +38,8 @@ stock_data <-
         first_junk,stock_symbol,"&tabOrder=2&isNonAdjusted=0&resultPageOrder=",page_number,"&totalPagingCount=-1&firstinput=", from_year, "%2F",from_month,"%2F",from_day,"+&firstinput=",to_year,"%2F",to_month,"%2F",to_day,"&firstinput_Month=11&secondinput=",to_year,"%2F",to_month,"%2F",to_day,"+&secondinput=",to_year,"%2F",to_month,"%2F",to_day,"&secondinput_Month=11&si.x=35&si.y=11",sep = ""
       )
 
-    htmlPage <- read_html(url_text)
-    table <- html_nodes(htmlPage,".Table3 td.calibri-12")
+    html_page <- read_html(url_text)
+    table <- html_nodes(html_page,".Table3 td.calibri-12")
     x <- html_text(table)
     a <- gsub("\t","", x)
     b<- gsub("\n","", a)
@@ -77,26 +77,26 @@ Extractor <- function (from,to,type,s_s) {
   page_n <- as.numeric(round(difftime(to.date,from.date,units="days")/42,0))+1
   
   #Setting up a variable to be used for storage
-  a <- list()
+  data_pages <- list()
   if(type != "stock"){
   # Loop in each page and get numbers
   for (p in 1:page_n) {
-    a[[p]] <- tsi_index(from_y,from_m,from_d,to_y,to_m,to_d,p)
+    data_pages[[p]] <- tsi_index(from_y,from_m,from_d,to_y,to_m,to_d,p)
   }# End Loop
   }else {
     for (p in 1:page_n) {
-      a[[p]] <- stock_data(from_y,from_m,from_d,to_y,to_m,to_d,s_s,p)
+      data_pages[[p]] <- stock_data(from_y,from_m,from_d,to_y,to_m,to_d,s_s,p)
     } 
   }
   #Setting up a variable to be used for storage
-  newDF <- data.frame()
-  newDF <- a[[1]]
-  for (i in 2:length(a)) {
-    newDF <- rbind(newDF,a[[i]])
+  new_df <- data.frame()
+  new_df <- data_pages[[1]]
+  for (i in 2:length(data_pages)) {
+    new_df <- rbind(new_df,data_pages[[i]])
   }# End Loop
-  n.r <- dim(newDF)[[1]]
-  newDF <- newDF[n.r:1,]
-  return (na.omit(newDF))
+  n.r <- dim(new_df)[[1]]
+  new_df <- new_df[n.r:1,]
+  return (na.omit(new_df))
 }# End Function
 
 #-FUNCTION-# To calculate Mue and Sigma 
@@ -177,9 +177,10 @@ TSI_Exp_r = function (M0,muM,t) {
 # Step 2: Provide From date (year,month,day) and To date (year,month,day) and number of pages to Extractor FUNCTION
 # Step 3: Call calculate.Mu.Sigma to calculate Mu and sigma 
 #==================================================================================================================#
+
 library("gdata")
 data <- Extractor("2015.01.01","2015.12.28","TASI")
-data <- Extractor("2016.01.01","2016.02.22","TASI",2010)
+data <- Extractor("2016.01.01","2016.02.22","stock",2010)
 oil <- read.csv(url("http://www.quandl.com/api/v1/datasets/CHRIS/CME_BZ1.csv"), header = T)
 banks <- read.xls("StockSymbols.xlsx", sheet = 1, header = TRUE)[,1:3]
 petro <- read.xls("StockSymbols.xlsx", sheet = 2, header = TRUE)[,1:3]
