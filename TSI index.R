@@ -99,6 +99,11 @@ Extractor <- function (from,to,type,s_s) {
   return (na.omit(new_df))
 }# End Function
 
+# FUNCTION - this is to remove the commas in numbers and convert them to numeric values 
+clean_up <- function (data_vector){
+  return (as.numeric(gsub(",","", data_vector)))
+}
+
 #-FUNCTION-# To calculate Mue and Sigma 
 calculate.Mu.Sigma <- function (dataframe) {
   #Extracting the close price only
@@ -178,10 +183,32 @@ TSI_Exp_r = function (M0,muM,t) {
 # Step 3: Call calculate.Mu.Sigma to calculate Mu and sigma 
 #==================================================================================================================#
 
-library("gdata")
-data <- Extractor("2015.01.01","2015.12.28","TASI")
-data <- Extractor("2016.01.01","2016.02.22","stock",2010)
-oil <- read.csv(url("http://www.quandl.com/api/v1/datasets/CHRIS/CME_BZ1.csv"), header = T)
+library("gdata") # Assuming you have this package installed
+library("Quandl") # Assuming you have this package installed
+
+data <- Extractor("2015.01.01","2016.5.4","TASI")
+data <- Extractor("2016.01.01","2016.02.22","TASI",2010)
+
+oil <- Quandl("OPEC/ORB")
+
+data$Close <- clean_up(data$Close)
+data$Open <-clean_up(data$Open)
+data$High <-clean_up(data$High)
+data$Low <-clean_up(data$Low)
+data$`Total Volume` <- clean_up(data$`Total Volume`)
+data$`Total Turnover` <- clean_up(data$`Total Turnover`)
+data$`# of Trades` <- clean_up(data$`# of Trades`)
+
+plot(1:length(data$Close),data$Close, type = "l")
+oil_sub<-oil[which(oil$Date > as.Date("2015-01-01") & oil$Date < as.Date("2016-05-04")),]
+oil.scaled <- scale(oil_sub$Value)
+tasi.scaled <- scale(data$Close)
+length(oil.scaled)
+length(tasi.scaled)
+truncted.oil.sub <- oil.scaled[1:340]
+plot(1:length(tasi.scaled),tasi.scaled, type = "l")
+lines(1:length(truncted.oil.sub),truncted.oil.sub[340:1])
+cor(truncted.oil.sub[340:1],tasi.scaled)
 banks <- read.xls("StockSymbols.xlsx", sheet = 1, header = TRUE)[,1:3]
 petro <- read.xls("StockSymbols.xlsx", sheet = 2, header = TRUE)[,1:3]
 head(petro)
