@@ -183,9 +183,13 @@ TSI_Exp_r = function (M0,muM,t) {
 #==================================================================================================================#
 
 
-data <- Extractor("2015.01.01","2016.5.21","TASI")
+data <- getIndexRecords("2015-01-01","2016-5-21")
 data <- Extractor("2016.01.01","2016.02.22","TASI",2010)
 
+layout(1:1)
+plot(data$close, type = "l")
+install.packages("Quandl")
+library("Quandl")
 oil <- Quandl("OPEC/ORB")
 
 data$Close <- clean_up(data$Close)
@@ -196,68 +200,69 @@ data$`Total Volume` <- clean_up(data$`Total Volume`)
 data$`Total Turnover` <- clean_up(data$`Total Turnover`)
 data$`# of Trades` <- clean_up(data$`# of Trades`)
 
-plot(1:length(data$Close),data$Close, type = "l")
+plot(data$close, type = "l")
 oil_sub<-oil[which(oil$Date > as.Date("2015-01-01") & oil$Date < as.Date("2016-05-04")),]
 oil.scaled <- scale(oil_sub$Value)
-tasi.scaled <- scale(data$Close)
+tasi.scaled <- scale(data$close)
 length(oil.scaled)
 length(tasi.scaled)
-truncted.oil.sub <- oil.scaled[1:340]
+truncted.tasi.sub <- tasi.scaled[1:346]
 plot(1:length(tasi.scaled),tasi.scaled, type = "l")
-lines(1:length(truncted.oil.sub),truncted.oil.sub[340:1])
+lines(1:length(oil.scaled),oil.scaled[346:1], col= "red")
 cor(truncted.oil.sub[340:1],tasi.scaled)
-banks <- read.xls("StockSymbols.xlsx", sheet = 1, header = TRUE)[,1:3]
-petro <- read.xls("StockSymbols.xlsx", sheet = 2, header = TRUE)[,1:3]
-head(petro)
-head(banks)
-b<- banks$St.Symbol
-p<- petro$St.Symbol
 
-stock_petro <- list()
-for (i in 1:length(p)){
-  stock_petro[[i]] <- Extractor(2015,01,01,2015,12,28,10,"stock",p[i])[-1,]
-} 
-
-stock_banks <- list()
-for (i in 1:length(b)){
-stock_banks[[i]] <- Extractor(2015,01,01,2015,12,28,10,"stock",b[i])[-1,]
-} 
-length(stock_petro)
-#write.csv(stocks, "Etisalat.csv")
-
-Sabic<-data[-1,]
-Sab <- as.numeric(gsub(",","", Sabic$Close))
-Petrochem <- as.numeric(gsub(",","", stock_petro[[2]]$Close))
-RIBL <- as.numeric(gsub(",","", stock_banks[[1]]$Close))
-tail(banks)
-plot(1:length(Sab), Sab, type = "l")
-
-pet.z <- scale(Petrochem)
-ribl.z <- scale(RIBL)
-cor(pet.z,ribl.z)
-r <- range(pet.z,ribl.z)
-plot(1:248,pet.z,ylim = r,type = "l", col= "red", cex = .8)
-lines(1:248,ribl.z, col="blue")
-
-
-mu <- calculate.Mu.Sigma(df)[[1]]
-sigma <- calculate.Mu.Sigma(df)[[2]]
-
-
-S <- G <- 0 
-for (e in 1:1000){
-  S[e] <- St(,mu,sigma,6934.06,mu,2)[[1]][5.5*60]
-  G[e] <- St(6934.06,mu,sigma,6934.06,mu,2)[[2]]
-}
-
-etihad <- St(44.55,mu,sigma,30)
-t.test(S)
-hist(S, breaks= 50)
-xn <- length(S)
-
-# Google agianst 
-yRange <- range(etihad)
-plot(1:length(etihad),etihad, type = "l", ylim = yRange, col ="red", xlab = "# minutes", ylab = "Price", main = "etihad Simulation")
-lines(1:xn,S, col = "blue")
-legend(xn*0.65,yRange[2]*0.95,legend = c("Not Simulated","Simulated"), cex = 1, col = c("red","blue"), lty = 1)
+# banks <- read.xls("StockSymbols.xlsx", sheet = 1, header = TRUE)[,1:3]
+# petro <- read.xls("StockSymbols.xlsx", sheet = 2, header = TRUE)[,1:3]
+# head(petro)
+# head(banks)
+# b<- banks$St.Symbol
+# p<- petro$St.Symbol
+# 
+# stock_petro <- list()
+# for (i in 1:length(p)){
+#   stock_petro[[i]] <- Extractor(2015,01,01,2015,12,28,10,"stock",p[i])[-1,]
+# } 
+# 
+# stock_banks <- list()
+# for (i in 1:length(b)){
+# stock_banks[[i]] <- Extractor(2015,01,01,2015,12,28,10,"stock",b[i])[-1,]
+# } 
+# length(stock_petro)
+# #write.csv(stocks, "Etisalat.csv")
+# 
+# Sabic<-data[-1,]
+# Sab <- as.numeric(gsub(",","", Sabic$Close))
+# Petrochem <- as.numeric(gsub(",","", stock_petro[[2]]$Close))
+# RIBL <- as.numeric(gsub(",","", stock_banks[[1]]$Close))
+# tail(banks)
+# plot(1:length(Sab), Sab, type = "l")
+# 
+# pet.z <- scale(Petrochem)
+# ribl.z <- scale(RIBL)
+# cor(pet.z,ribl.z)
+# r <- range(pet.z,ribl.z)
+# plot(1:248,pet.z,ylim = r,type = "l", col= "red", cex = .8)
+# lines(1:248,ribl.z, col="blue")
+# 
+# 
+# mu <- calculate.Mu.Sigma(df)[[1]]
+# sigma <- calculate.Mu.Sigma(df)[[2]]
+# 
+# 
+# S <- G <- 0 
+# for (e in 1:1000){
+#   S[e] <- St(,mu,sigma,6934.06,mu,2)[[1]][5.5*60]
+#   G[e] <- St(6934.06,mu,sigma,6934.06,mu,2)[[2]]
+# }
+# 
+# etihad <- St(44.55,mu,sigma,30)
+# t.test(S)
+# hist(S, breaks= 50)
+# xn <- length(S)
+# 
+# # Google agianst 
+# yRange <- range(etihad)
+# plot(1:length(etihad),etihad, type = "l", ylim = yRange, col ="red", xlab = "# minutes", ylab = "Price", main = "etihad Simulation")
+# lines(1:xn,S, col = "blue")
+# legend(xn*0.65,yRange[2]*0.95,legend = c("Not Simulated","Simulated"), cex = 1, col = c("red","blue"), lty = 1)
 
